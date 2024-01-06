@@ -1,6 +1,7 @@
 package com.alamin1x0.e_oms.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -45,7 +46,6 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
     var LoginDeviceName: String = ""
     var LoginDeviceID: String = ""
 
-
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val REQUEST_CODE = 100
     private val permission_ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
@@ -54,12 +54,12 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
 
     var premissions = arrayOf("android.permission.POST_NOTIFICATIONS")
 
+    @SuppressLint("HardwareIds")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar!!.hide()
-
 
         lateinit var dialog: AlertDialog
         dialog = MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded)
@@ -126,6 +126,7 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
                 val editor = preferences.edit()
 
                 editor.putString("userName", binding.userEmail.text.toString())
+                editor.putString("userPassword", binding.userPassword.text.toString())
                 editor.apply()
 
                 val loginRequest = UserLoginModel(
@@ -155,12 +156,25 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
                                 Toast.LENGTH_SHORT
                             ).show()
 
-                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                            finish()
+                            if (response.body()!!.status == "Success") {
+                                startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                                finish()
+                            } else {
+                                Config.hideDialog()
+                                Toast.makeText(
+                                    this@LoginActivity,
+                                    response.body()!!.status,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
 
-                        }else{
+                        } else {
                             Config.hideDialog()
-                            Toast.makeText(this@LoginActivity, response.errorBody().toString(), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@LoginActivity,
+                                response.errorBody().toString(),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
@@ -285,7 +299,8 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
                             geocoder.getFromLocation(it.latitude, it.longitude, 1)!!
                         LoginLocationLat = "${addresses[0].latitude}"
                         LoginLocationLng = "${addresses[0].longitude}"
-                        LoginLocationName = "${addresses[0].getAddressLine(0)}, " + " ${addresses[0].adminArea}"
+                        LoginLocationName =
+                            "${addresses[0].getAddressLine(0)}, " + " ${addresses[0].adminArea}"
 
 
                     } catch (e: java.io.IOException) {

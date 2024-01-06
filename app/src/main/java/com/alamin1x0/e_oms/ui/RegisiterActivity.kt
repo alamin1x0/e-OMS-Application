@@ -105,13 +105,13 @@ class RegisiterActivity : AppCompatActivity() {
             userPassword = binding.userPassword.text.toString()
 
             if (userName.isEmpty()) {
-                binding.userName.setError("Enter your Username")
+                binding.userName.setError("Username")
                 binding.userName.requestFocus()
             } else if (userEmail.isEmpty()) {
-                binding.userEmail.setError("Enter your Email")
+                binding.userEmail.setError("Email")
                 binding.userEmail.requestFocus()
             } else if (userPassword.isEmpty()) {
-                binding.userPassword.setError("Enter your Password")
+                binding.userPassword.setError("Password")
                 binding.userPassword.requestFocus()
             } else {
                 Config.showDialog(this)
@@ -120,6 +120,7 @@ class RegisiterActivity : AppCompatActivity() {
                 val editor = preferences.edit()
 
                 editor.putString("userName", binding.userName.text.toString())
+                editor.putString("userPassword", binding.userPassword.text.toString())
                 editor.apply()
 
                 val call =
@@ -150,8 +151,18 @@ class RegisiterActivity : AppCompatActivity() {
                                 Toast.LENGTH_SHORT
                             ).show()
 
-                            startActivity(Intent(this@RegisiterActivity, MainActivity::class.java))
-                            finish()
+                            if (response.body()!!.status == "Success") {
+                                startActivity(Intent(this@RegisiterActivity, MainActivity::class.java))
+                                finish()
+                            } else {
+                                Config.hideDialog()
+                                Toast.makeText(
+                                    this@RegisiterActivity,
+                                    response.body()!!.status,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
                         } else {
                             Config.hideDialog()
                             Toast.makeText(
