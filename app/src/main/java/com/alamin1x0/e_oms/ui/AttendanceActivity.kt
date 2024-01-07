@@ -27,6 +27,7 @@ import com.alamin1x0.e_oms.model.AttendanceLocationModel
 import com.alamin1x0.e_oms.model.AttendanceResponse
 import com.alamin1x0.e_oms.model.UserAttendanceModel
 import com.alamin1x0.e_oms.model.UserAttendanceResponse
+import com.alamin1x0.e_oms.utils.Config
 import com.alamin1x0.e_oms.utils.NetworkManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -100,7 +101,6 @@ class AttendanceActivity : AppCompatActivity() {
         attDeviceName = "${Build.BRAND}" + " ${Build.MODEL}"
         attDeviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
-
         locationCheckforUser()
     }
 
@@ -129,15 +129,14 @@ class AttendanceActivity : AppCompatActivity() {
     }
 
     private fun locationCheckforUser() {
+        Config.showDialog(this)
 
         val presetLocation = Location("presetLocation")
         presetLocation.latitude =
-            preferencesLocation!!.getString("LoginLocationLat", "")!!.toDouble()
+            preferencesLocation!!.getString("setLocationLat", "-1")!!.toDouble()
         presetLocation.longitude =
-            preferencesLocation!!.getString("LoginLocationLng", "")!!.toDouble()
+            preferencesLocation!!.getString("setLocationLng", "-1")!!.toDouble()
 
-//        presetLocation.latitude = 25.00
-//        presetLocation.longitude = 122.888383
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -185,6 +184,7 @@ class AttendanceActivity : AppCompatActivity() {
                     )
                 ) {
                     binding.attendanceId.isEnabled = true
+                    Config.hideDialog()
 
                     binding.attendanceId.setOnClickListener {
                         val userattendanceRequest = UserAttendanceModel(
@@ -212,6 +212,7 @@ class AttendanceActivity : AppCompatActivity() {
                                         Toast.LENGTH_SHORT
                                     )
                                         .show()
+
                                 } else {
                                     Toast.makeText(
                                         this@AttendanceActivity,
@@ -242,6 +243,7 @@ class AttendanceActivity : AppCompatActivity() {
                 }
 
             } else {
+                Config.hideDialog()
                 Toast.makeText(this, "Distance is not within 100 meters", Toast.LENGTH_SHORT).show()
             }
         }

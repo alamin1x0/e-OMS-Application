@@ -98,9 +98,13 @@ class MainActivity : AppCompatActivity() {
         attDeviceName = "${Build.BRAND}" + " ${Build.MODEL}"
         attDeviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
-
-        //locationCheckforUser()
         locationsetUser()
+
+        binding.userName.setText("Username : " + preferences!!.getString("userName", "").toString())
+
+        preferencesLocation!!.getString("setLocationLat", "").let {
+            binding.buttonId.isEnabled=it.isNullOrEmpty()
+        }
 
         binding.attendanceId.setOnClickListener {
             startActivity(Intent(this, AttendanceActivity::class.java))
@@ -132,127 +136,8 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    private fun locationCheckforUser() {
-
-        val presetLocation = Location("presetLocation")
-        presetLocation.latitude =
-            preferencesLocation!!.getString("LoginLocationLat", "")!!.toDouble()
-        presetLocation.longitude =
-            preferencesLocation!!.getString("LoginLocationLng", "")!!.toDouble()
-
-//        presetLocation.latitude = 25.00
-//        presetLocation.longitude = 122.888383
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-
-            return
-        }
-        locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            1000,
-            1f
-        ) { location ->
-
-            val userLocation = Location("userLocation")
-            userLocation.latitude = location.latitude
-            userLocation.longitude = location.longitude
-
-            val distance = userLocation.distanceTo(presetLocation)
-
-            if (distance <= 100) {
-
-                val currentTime = LocalDateTime.now()
-                val attendanceStartTime = LocalDateTime.of(
-                    currentTime.year,
-                    currentTime.month,
-                    currentTime.dayOfMonth,
-                    7,
-                    0
-                )
-                val attendanceEndTime = LocalDateTime.of(
-                    currentTime.year,
-                    currentTime.month,
-                    currentTime.dayOfMonth,
-                    17,
-                    0
-                )
-
-                if (currentTime.isAfter(attendanceStartTime) && currentTime.isBefore(
-                        attendanceEndTime
-                    )
-                ) {
-                    binding.attendanceId.isEnabled = true
-
-                    binding.attendanceId.setOnClickListener {
-                        val userattendanceRequest = UserAttendanceModel(
-                            preferences!!.getString("userName", "")!!,
-                            AttLocationName,
-                            LoginLocationLat,
-                            LoginLocationLng,
-                            attDeviceName,
-                            attDeviceID
-                        )
-
-                        val call =
-                            ApiUtilities.getInstance().create(ApiInterface::class.java)
-                                .userAttendance(userattendanceRequest)
-
-                        call.enqueue(object : Callback<UserAttendanceResponse> {
-                            override fun onResponse(
-                                call: Call<UserAttendanceResponse>,
-                                response: Response<UserAttendanceResponse>
-                            ) {
-                                if (response.isSuccessful) {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        response.body()!!.msg,
-                                        Toast.LENGTH_SHORT
-                                    )
-                                        .show()
-                                } else {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        response.errorBody().toString(),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-
-                            override fun onFailure(
-                                call: Call<UserAttendanceResponse>,
-                                t: Throwable
-                            ) {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    t.message.toString(),
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
-                            }
-
-                        })
-
-                    }
-
-                } else {
-                    binding.attendanceId.isEnabled = false
-                }
-
-            } else {
-                Toast.makeText(this, "Distance is not within 100 meters", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-    }
-
     private fun locationsetUser() {
+
 
         binding.buttonId.setOnClickListener {
 
@@ -265,9 +150,10 @@ class MainActivity : AppCompatActivity() {
             preferencesLocation = this.getSharedPreferences("setLocation", MODE_PRIVATE)
             val editor = preferencesLocation!!.edit()
 
-            editor.putString("LoginLocationLat", LoginLocationLat)
-            editor.putString("LoginLocationLng", LoginLocationLng)
+            editor.putString("setLocationLat", LoginLocationLat)
+            editor.putString("setLocationLng", LoginLocationLng)
             editor.apply()
+
 
             val call =
                 ApiUtilities.getInstance().create(ApiInterface::class.java)
