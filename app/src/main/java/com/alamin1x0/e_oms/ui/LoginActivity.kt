@@ -5,12 +5,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.BatteryManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -35,8 +37,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.IOException
 import java.util.Locale
+import kotlin.math.log
 
-class LoginActivity<IOException : Any> : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityLoginBinding
 
@@ -45,6 +48,7 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
     var LoginLocationLng: String = ""
     var LoginDeviceName: String = ""
     var LoginDeviceID: String = ""
+    var LoginDeviceBatteryHealth: String = ""
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val REQUEST_CODE = 100
@@ -54,7 +58,7 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
 
     var premissions = arrayOf("android.permission.POST_NOTIFICATIONS")
 
-    @SuppressLint("HardwareIds")
+    @SuppressLint("HardwareIds", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -97,16 +101,21 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
             startActivityForResult(locationSettingsIntent, REQUEST_CODE)
         }
 
-        LoginLocationLat = binding.signInLocationLat.text.toString()
-        LoginLocationLng = binding.signInLocationLat.text.toString()
-
         binding.userRegistion.setOnClickListener {
             startActivity(Intent(this, RegisiterActivity::class.java))
         }
 
+        val batteryPercentage = getBatteryPercentage()
+        LoginDeviceBatteryHealth = "$batteryPercentage"
+
         LoginDeviceName = "${Build.BRAND}" + " ${Build.MODEL}"
         LoginDeviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
+        signinUser()
+
+    }
+
+    private fun signinUser() {
         binding.signIn.setOnClickListener {
             val userName = binding.userEmail.text.toString()
             val password = binding.userPassword.text.toString()
@@ -137,6 +146,7 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
                     LoginLocationLng,
                     LoginDeviceName,
                     LoginDeviceID,
+                    LoginDeviceBatteryHealth
                 )
 
                 val call =
@@ -193,6 +203,18 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
         }
     }
 
+    private fun getBatteryPercentage(): Int {
+        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        val batteryIntent: Intent? = registerReceiver(null, intentFilter)
+        val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+
+        return if (level != -1 && scale != -1) {
+            (level * 100) / scale
+        } else {
+            -1 // Return -1 if unable to retrieve battery percentage
+        }
+    }
 
     private fun requestRuntimePermission() {
         if (checkSelfPermission(permission_ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -301,7 +323,8 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
                         LoginLocationLng = "${addresses[0].longitude}"
                         LoginLocationName =
                             "${addresses[0].getAddressLine(0)}, " + " ${addresses[0].adminArea}"
-                        
+
+
                     } catch (e: java.io.IOException) {
                         throw RuntimeException(e)
                     }

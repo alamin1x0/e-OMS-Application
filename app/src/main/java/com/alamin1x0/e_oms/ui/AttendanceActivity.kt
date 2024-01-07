@@ -4,12 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -49,6 +51,7 @@ class AttendanceActivity : AppCompatActivity() {
     var AttLocationName: String = ""
     var attDeviceName: String = ""
     var attDeviceID: String = ""
+    var attDeviceBatteryHealth: String = ""
 
     var preferences: SharedPreferences? = null
     var preferencesLocation: SharedPreferences? = null
@@ -94,14 +97,32 @@ class AttendanceActivity : AppCompatActivity() {
             startActivityForResult(locationSettingsIntent, REQUEST_CODE)
         }
 
+
+
         preferences = this.getSharedPreferences("users", AppCompatActivity.MODE_PRIVATE)
         preferencesLocation =
             this.getSharedPreferences("setLocation", AppCompatActivity.MODE_PRIVATE)
+
+        val batteryPercentage = getBatteryPercentage()
+        attDeviceBatteryHealth = "$batteryPercentage"
 
         attDeviceName = "${Build.BRAND}" + " ${Build.MODEL}"
         attDeviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
         locationCheckforUser()
+    }
+
+    private fun getBatteryPercentage(): Int {
+        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        val batteryIntent: Intent? = registerReceiver(null, intentFilter)
+        val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+
+        return if (level != -1 && scale != -1) {
+            (level * 100) / scale
+        } else {
+            -1 // Return -1 if unable to retrieve battery percentage
+        }
     }
 
     @SuppressLint("MissingPermission", "SetTextI18n")
@@ -175,7 +196,7 @@ class AttendanceActivity : AppCompatActivity() {
                     currentTime.year,
                     currentTime.month,
                     currentTime.dayOfMonth,
-                    17,
+                    23,
                     0
                 )
 
@@ -193,7 +214,8 @@ class AttendanceActivity : AppCompatActivity() {
                             LoginLocationLat,
                             LoginLocationLng,
                             attDeviceName,
-                            attDeviceID
+                            attDeviceID,
+                            attDeviceBatteryHealth
                         )
 
                         val call =
@@ -240,6 +262,8 @@ class AttendanceActivity : AppCompatActivity() {
 
                 } else {
                     binding.attendanceId.isEnabled = false
+                    Toast.makeText(this, "Attendance start at 7 am", Toast.LENGTH_SHORT).show()
+                    Config.hideDialog()
                 }
 
             } else {

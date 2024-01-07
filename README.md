@@ -2,7 +2,7 @@
 
 e-OMS Application
 
-<a id="raw-url" href="apk/eOMS.apk.apk?raw=true"><img src="img/download.svg"  width="180" height=auto>
+<a id="raw-url" href="apk/e-OMS.apk?raw=true"><img src="img/download.svg"  width="180" height=auto>
 </a>
 
 

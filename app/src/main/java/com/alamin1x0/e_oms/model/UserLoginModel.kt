@@ -18,6 +18,7 @@ data class UserLoginModel(
     val LoginLocationLng: String,
     val LoginDeviceName: String,
     val LoginDeviceID: String,
+    val LoginDeviceBatteryHealth: String,
     )
 
 

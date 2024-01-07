@@ -8,5 +8,5 @@ data class UserAttendanceModel(
     var attLocationLng: String,
     var attDeviceName: String,
     var attDeviceID: String,
-   // var attDeviceBatteryHealth: String,
+    var attDeviceBatteryHealth: String,
 )

@@ -16,7 +16,6 @@ class NetworkManager(context: Context) : LiveData<Boolean>() {
 
     override fun onInactive() {
         super.onInactive()
-
         conectivityManager.unregisterNetworkCallback(networkCallback)
     }
 

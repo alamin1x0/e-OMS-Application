@@ -138,7 +138,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun locationsetUser() {
 
-
         binding.buttonId.setOnClickListener {
 
             val attendanceRequest = AttendanceLocationModel(

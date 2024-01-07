@@ -83,9 +83,6 @@ class RegisiterActivity : AppCompatActivity() {
 
         currentLocation()
 
-        signInLocationLat = binding.signInLocationLat.text.toString()
-        signInLocationLng = binding.signInLocationLat.text.toString()
-
         if (!isLocationEnabled) {
             val locationSettingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivityForResult(locationSettingsIntent, REQUEST_CODE)
@@ -99,7 +96,6 @@ class RegisiterActivity : AppCompatActivity() {
         signInDeviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
         binding.RegisterBtn.setOnClickListener {
-
             userName = binding.userName.text.toString()
             userEmail = binding.userEmail.text.toString()
             userPassword = binding.userPassword.text.toString()
@@ -203,14 +199,6 @@ class RegisiterActivity : AppCompatActivity() {
                         signInLocationLat = "${addresses[0].latitude}"
                         signInLocationLng = "${addresses[0].longitude}"
                         signInLocationName = "${addresses[0].getAddressLine(0)}, " + " ${addresses[0].adminArea}"
-
-
-                        binding.signInLocationName.text=signInLocationName
-                        Log.d("jjkdkjk", "currentLocation: "+signInLocationName)
-
-                        var signInLocationLatData = signInLocationLat!!.toDouble()
-                        var signInLocationLngData = signInLocationLng!!.toDouble()
-                        val totalLanth = signInLocationLatData - signInLocationLngData
 
                     } catch (e: IOException) {
                         throw RuntimeException(e)
