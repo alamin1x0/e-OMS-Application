@@ -92,13 +92,13 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
 
         currentLocation()
 
-        LoginLocationLat = binding.signInLocationLat.text.toString()
-        LoginLocationLng = binding.signInLocationLat.text.toString()
-
         if (!isLocationEnabled) {
             val locationSettingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivityForResult(locationSettingsIntent, REQUEST_CODE)
         }
+
+        LoginLocationLat = binding.signInLocationLat.text.toString()
+        LoginLocationLng = binding.signInLocationLat.text.toString()
 
         binding.userRegistion.setOnClickListener {
             startActivity(Intent(this, RegisiterActivity::class.java))
@@ -301,8 +301,7 @@ class LoginActivity<IOException : Any> : AppCompatActivity() {
                         LoginLocationLng = "${addresses[0].longitude}"
                         LoginLocationName =
                             "${addresses[0].getAddressLine(0)}, " + " ${addresses[0].adminArea}"
-
-
+                        
                     } catch (e: java.io.IOException) {
                         throw RuntimeException(e)
                     }

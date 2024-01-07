@@ -204,6 +204,10 @@ class RegisiterActivity : AppCompatActivity() {
                         signInLocationLng = "${addresses[0].longitude}"
                         signInLocationName = "${addresses[0].getAddressLine(0)}, " + " ${addresses[0].adminArea}"
 
+
+                        binding.signInLocationName.text=signInLocationName
+                        Log.d("jjkdkjk", "currentLocation: "+signInLocationName)
+
                         var signInLocationLatData = signInLocationLat!!.toDouble()
                         var signInLocationLngData = signInLocationLng!!.toDouble()
                         val totalLanth = signInLocationLatData - signInLocationLngData

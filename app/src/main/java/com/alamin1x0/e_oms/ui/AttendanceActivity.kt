@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import com.alamin1x0.e_oms.R
 import com.alamin1x0.e_oms.api.ApiInterface
 import com.alamin1x0.e_oms.api.ApiUtilities
+import com.alamin1x0.e_oms.databinding.ActivityAttendanceBinding
 import com.alamin1x0.e_oms.databinding.ActivityMainBinding
 import com.alamin1x0.e_oms.model.AttendanceLocationModel
 import com.alamin1x0.e_oms.model.AttendanceResponse
@@ -38,9 +39,9 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+class AttendanceActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityAttendanceBinding
 
     var LoginLocationLat: String = ""
     var LoginLocationLng: String = ""
@@ -57,8 +58,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityAttendanceBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar!!.hide()
 
         lateinit var dialog: AlertDialog
         dialog = MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded)
@@ -99,13 +101,7 @@ class MainActivity : AppCompatActivity() {
         attDeviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
 
-        //locationCheckforUser()
-        locationsetUser()
-
-        binding.attendanceId.setOnClickListener {
-            startActivity(Intent(this, AttendanceActivity::class.java))
-        }
-
+        locationCheckforUser()
     }
 
     @SuppressLint("MissingPermission", "SetTextI18n")
@@ -211,14 +207,14 @@ class MainActivity : AppCompatActivity() {
                             ) {
                                 if (response.isSuccessful) {
                                     Toast.makeText(
-                                        this@MainActivity,
+                                        this@AttendanceActivity,
                                         response.body()!!.msg,
                                         Toast.LENGTH_SHORT
                                     )
                                         .show()
                                 } else {
                                     Toast.makeText(
-                                        this@MainActivity,
+                                        this@AttendanceActivity,
                                         response.errorBody().toString(),
                                         Toast.LENGTH_SHORT
                                     ).show()
@@ -230,7 +226,7 @@ class MainActivity : AppCompatActivity() {
                                 t: Throwable
                             ) {
                                 Toast.makeText(
-                                    this@MainActivity,
+                                    this@AttendanceActivity,
                                     t.message.toString(),
                                     Toast.LENGTH_SHORT
                                 )
@@ -250,53 +246,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-    private fun locationsetUser() {
-
-        binding.buttonId.setOnClickListener {
-
-            val attendanceRequest = AttendanceLocationModel(
-                preferences!!.getString("userName", "")!!,
-                LoginLocationLat.toDouble(),
-                LoginLocationLng.toDouble()
-            )
-
-            preferencesLocation = this.getSharedPreferences("setLocation", MODE_PRIVATE)
-            val editor = preferencesLocation!!.edit()
-
-            editor.putString("LoginLocationLat", LoginLocationLat)
-            editor.putString("LoginLocationLng", LoginLocationLng)
-            editor.apply()
-
-            val call =
-                ApiUtilities.getInstance().create(ApiInterface::class.java)
-                    .userAttendanceLocation(attendanceRequest)
-
-            call.enqueue(object : Callback<AttendanceResponse> {
-                override fun onResponse(
-                    call: Call<AttendanceResponse>,
-                    response: Response<AttendanceResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@MainActivity, response.body()!!.msg, Toast.LENGTH_SHORT)
-                            .show()
-                    } else {
-                        Toast.makeText(
-                            this@MainActivity,
-                            response.errorBody().toString(),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<AttendanceResponse>, t: Throwable) {
-                    Toast.makeText(this@MainActivity, t.message.toString(), Toast.LENGTH_SHORT)
-                        .show()
-                }
-
-            })
-        }
     }
 
 }
